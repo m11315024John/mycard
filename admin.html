@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>名片管理系統</title>
     <style>
-        body { font-family: sans-serif; background-color: #f1f5f9; padding: 30px; display: flex; justify-content: center; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f1f5f9; padding: 30px; display: flex; justify-content: center; }
         .admin-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 600px; }
         h2 { margin-bottom: 20px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
         .form-group { margin-bottom: 18px; }
@@ -16,18 +16,19 @@
         .error-msg { color: #ef4444; font-size: 12px; margin-top: 4px; display: none; font-weight: bold; }
         button { width: 100%; padding: 14px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; background-color: #2563eb; color: white; margin-top: 15px; }
         button:hover { background-color: #1d4ed8; }
-        .notice-box { background-color: #fef3c7; border-left: 4px solid #d97706; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #92400e; line-height: 1.5; }
+        .notice-box { background-color: #e0f2fe; border-left: 4px solid #0284c7; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #0369a1; line-height: 1.5; }
     </style>
 </head>
 <body>
 
 <div class="admin-box">
-    <h2>名片管理後臺介面 (GitHub 絕對路徑版)</h2>
+    <h2>名片管理後臺介面 (GitHub 絕對路徑新版)</h2>
     
     <div class="notice-box">
-        <strong>💡 GitHub 部署說明：</strong><br>
-        請於下方修改欄位，點擊下載後會得到唯一的 <strong>mycardAIVibeCoding.xml</strong>。<br>
-        請將此檔案上傳至您的 GitHub 倉庫對應路徑下覆蓋舊檔，即可完成線上名片同步更新！
+        <strong>💡 GitHub 部署更新流程：</strong><br>
+        1. 於下方修改或確認名片資訊（預設為麥考錫風格）。<br>
+        2. 點擊下方按鈕，將自動下載唯一的 <strong>mycardAIVibeCoding.xml</strong>。<br>
+        3. 將檔案上傳至您的 GitHub 倉庫根目錄覆蓋舊檔，前台即同步更新！
     </div>
     
     <div class="form-group">
@@ -123,7 +124,7 @@
         const skill = document.getElementById('inputSkill').value;
         const bio = document.getElementById('inputBio').value;
 
-        // 建立包含 GitHub 絕對網址路徑標記與欄位內容的 XML
+        // 建立包含指定路徑標記與欄位內容的 XML
         let xmlString = `<?xml version="1.0" encoding="UTF-8"?>\n`;
         xmlString += `\n`;
         xmlString += `<card_data>\n`;
@@ -143,7 +144,7 @@
         link.download = "mycardAIVibeCoding.xml"; // 固定儲存檔名
         link.click();
 
-        alert("XML 檔案已成功下載！請將下載的檔案覆蓋至 GitHub 對應路徑下。");
+        alert("XML 檔案下載成功！\n請將下載的 mycardAIVibeCoding.xml 上傳至您的 GitHub『mycard』倉庫中覆蓋舊檔。");
     }
 </script>
 </body>
