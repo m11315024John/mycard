@@ -40,7 +40,7 @@
 <body>
 
 <div class="card-container">
-    <div id="statusTip" class="status-msg">正在從 GitHub 絕對路徑讀取名片資料...</div>
+    <div id="statusTip" class="status-msg">正在從 GitHub 讀取最新名片資料...</div>
 
     <div id="businessCard" class="business-card" style="display:none;">
         <div class="avatar-box">
@@ -61,15 +61,15 @@
     };
 
     function loadXmlFromGithub() {
-        // 設定讀取的 GitHub 絕對路徑
-        const githubXmlUrl = 'https://m11315024john.github.io/johnchen/mycard20260626/mycardAIVibeCoding.xml';
+        // 全面修正為新的 GitHub Pages 絕對路徑根目錄
+        const githubXmlUrl = 'https://m11315024john.github.io/mycard/mycardAIVibeCoding.xml';
 
-        // 加上快取破壞參數 (cache-buster)，確保每一次打開讀取的都是 GitHub 最新檔案，而不是瀏覽器舊快取
-        const fetchUrl = `${githubXmlUrl}?t=${new Date().getTime()}`;
+        // 附加隨機時間參數，強制破壞瀏覽器快取，確保使用者在 GitHub 覆蓋檔案後能即時看到新資料
+        const fetchUrl = `${githubXmlUrl}?cache=${new Date().getTime()}`;
 
         fetch(fetchUrl)
         .then(res => {
-            if(!res.ok) throw new Error('無法讀取 XML 檔案。請確認檔案是否已成功 Push 至 GitHub 倉庫指定路徑。');
+            if(!res.ok) throw new Error('找不到 XML 檔案。請確認 mycardAIVibeCoding.xml 是否已成功上傳至『mycard』倉庫根目錄下。');
             return res.text();
         })
         .then(xmlText => {
@@ -78,7 +78,7 @@
             parseAndApplyXML(xmlText);
         })
         .catch(err => {
-            document.getElementById('statusTip').innerHTML = `<span style="color:#ef4444;">讀取失敗</span><br><small style="font-weight:normal;color:#64748b;">原因：${err.message}</small>`;
+            document.getElementById('statusTip').innerHTML = `<span style="color:#ef4444;">資料載入失敗</span><br><small style="font-weight:normal;color:#64748b;">${err.message}</small>`;
         });
     }
 
