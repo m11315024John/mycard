@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人動態名片</title>
+    <style>
+        :root {
+            --cyber-bg: #0f172a; --cyber-card: #1e293b; --cyber-text: #f8fafc; --cyber-accent: #38bdf8;
+            --art-bg: #f5efe6; --art-card: #e8dbc5; --art-text: #2c2520; --art-accent: #d97706;
+            --minimal-bg: #f8fafc; --minimal-card: #ffffff; --minimal-text: #334155; --minimal-accent: #0f172a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; background-color: #cbd5e1; transition: background-color 0.4s; }
+        .card-container { width: 100%; max-width: 413px; display: flex; flex-direction: column; align-items: center; }
+        .business-card { width: 100%; min-height: 560px; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); padding: 30px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; overflow: hidden; word-break: break-all; }
+        
+        /* 風格樣式 */
+        .style-cyber { background-color: var(--cyber-bg); color: var(--cyber-text); border: 2px solid var(--cyber-accent); }
+        .style-cyber h4 { color: var(--cyber-accent); border-bottom: 1px dashed var(--cyber-accent); }
+        .style-cyber .avatar-box { border: 3px solid var(--cyber-accent); }
+        .style-art { background-color: var(--art-bg); color: var(--art-text); border-radius: 50px 12px; border: 1px solid var(--art-card); }
+        .style-art h4 { color: var(--art-accent); background-color: var(--art-card); padding: 2px 8px; border-radius: 4px; }
+        .style-art .avatar-box { border: 2px solid var(--art-accent); border-radius: 24px; }
+        .style-minimal { background-color: var(--minimal-bg); color: var(--minimal-text); border: 1px solid #e2e8f0; }
+        .style-minimal h4 { color: #64748b; border-left: 3px solid var(--minimal-accent); padding-left: 8px; }
+        .style-minimal .avatar-box { border: 1px solid #cbd5e1; }
+
+        .avatar-box { width: 120px; height: 120px; border-radius: 50%; overflow: hidden; background: #cbd5e1; margin-bottom: 18px; display: flex; justify-content: center; align-items: center; }
+        .avatar-box img { width: 100%; height: 100%; object-fit: cover; }
+        .card-name { font-size: 26px; font-weight: 700; margin-bottom: 22px; }
+        .info-sec { width: 100%; text-align: left; margin-bottom: 16px; }
+        .info-sec h4 { font-size: 13px; margin-bottom: 6px; text-transform: uppercase; font-weight: bold; }
+        .info-sec p { font-size: 14px; line-height: 1.6; opacity: 0.95; }
+        .qrcode-box { margin-top: 20px; width: 120px; height: 120px; background: white; padding: 6px; border-radius: 8px; display: flex; justify-content: center; align-items: center; }
+        .qrcode-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .status-msg { font-size: 15px; color: #475569; font-weight: bold; text-align: center; line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+<div class="card-container">
+    <div id="statusTip" class="status-msg">正在從 GitHub 絕對路徑讀取名片資料...</div>
+
+    <div id="businessCard" class="business-card" style="display:none;">
+        <div class="avatar-box">
+            <img id="viewAvatar" src="" alt="大頭照">
+        </div>
+        <div id="viewName" class="card-name"></div>
+        <div class="info-sec"><h4>最高學歷</h4><p id="viewEdu"></p></div>
+        <div class="info-sec"><h4>經驗</h4><p id="viewExp"></p></div>
+        <div class="info-sec"><h4>專長</h4><p id="viewSkill"></p></div>
+        <div class="info-sec"><h4>個人簡介</h4><p id="viewBio"></p></div>
+        <div id="qrArea" class="qrcode-box" style="display:none;"><img id="viewQR" src="" alt="QR"></div>
+    </div>
+</div>
+
+<script>
+    window.onload = function() {
+        loadXmlFromGithub();
+    };
+
+    function loadXmlFromGithub() {
+        // 設定讀取的 GitHub 絕對路徑
+        const githubXmlUrl = 'https://m11315024john.github.io/johnchen/mycard20260626/mycardAIVibeCoding.xml';
+
+        // 加上快取破壞參數 (cache-buster)，確保每一次打開讀取的都是 GitHub 最新檔案，而不是瀏覽器舊快取
+        const fetchUrl = `${githubXmlUrl}?t=${new Date().getTime()}`;
+
+        fetch(fetchUrl)
+        .then(res => {
+            if(!res.ok) throw new Error('無法讀取 XML 檔案。請確認檔案是否已成功 Push 至 GitHub 倉庫指定路徑。');
+            return res.text();
+        })
+        .then(xmlText => {
+            document.getElementById('statusTip').style.display = "none";
+            document.getElementById('businessCard').style.display = "flex";
+            parseAndApplyXML(xmlText);
+        })
+        .catch(err => {
+            document.getElementById('statusTip').innerHTML = `<span style="color:#ef4444;">讀取失敗</span><br><small style="font-weight:normal;color:#64748b;">原因：${err.message}</small>`;
+        });
+    }
+
+    function parseAndApplyXML(xmlText) {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+        
+        const style = xmlDoc.getElementsByTagName("style")[0].textContent;
+        const name = xmlDoc.getElementsByTagName("name")[0].textContent;
+        const edu = xmlDoc.getElementsByTagName("education")[0].textContent;
+        const exp = xmlDoc.getElementsByTagName("experience")[0].textContent;
+        const skill = xmlDoc.getElementsByTagName("skills")[0].textContent;
+        const bio = xmlDoc.getElementsByTagName("bio")[0].textContent;
+        const avatar = xmlDoc.getElementsByTagName("avatar")[0].textContent;
+        const qrcode = xmlDoc.getElementsByTagName("qrcode")[0].textContent;
+
+        const card = document.getElementById('businessCard');
+        card.className = "business-card style-" + style;
+        if(style === 'cyber') document.body.style.backgroundColor = "#020617";
+        else if(style === 'art') document.body.style.backgroundColor = "#d6c7b0";
+        else document.body.style.backgroundColor = "#e2e8f0";
+
+        const convertBr = (txt) => txt.replace(/&lt;br&gt;/g, '<br>').replace(/<br>/g, '<br>');
+        document.getElementById('viewName').innerHTML = convertBr(name);
+        document.getElementById('viewEdu').innerHTML = convertBr(edu);
+        document.getElementById('viewExp').innerHTML = convertBr(exp);
+        document.getElementById('viewSkill').innerHTML = convertBr(skill);
+        document.getElementById('viewBio').innerHTML = convertBr(bio);
+
+        if (avatar && avatar.trim() !== "") document.getElementById('viewAvatar').src = avatar;
+        else document.getElementById('viewAvatar').src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100%' height='100%' fill='%23cbd5e1'/><text x='50%' y='55%' font-size='12' fill='%2364748b' text-anchor='middle'>無大頭照</text></svg>";
+        
+        if (qrcode && qrcode.trim() !== "") {
+            document.getElementById('qrArea').style.display = "flex";
+            document.getElementById('viewQR').src = qrcode;
+        } else {
+            document.getElementById('qrArea').style.display = "none";
+        }
+    }
+</script>
+</body>
+</html>

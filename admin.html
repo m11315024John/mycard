@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>名片管理系統</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f1f5f9; padding: 30px; display: flex; justify-content: center; }
+        .admin-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 600px; }
+        h2 { margin-bottom: 20px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        .form-group { margin-bottom: 18px; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+        input[type="text"], textarea, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f8fafc; box-sizing: border-box; }
+        textarea { height: 90px; resize: vertical; }
+        .hint { font-size: 12px; color: #64748b; margin-top: 4px; display: block; }
+        .error-msg { color: #ef4444; font-size: 12px; margin-top: 4px; display: none; font-weight: bold; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; background-color: #2563eb; color: white; margin-top: 15px; }
+        button:hover { background-color: #1d4ed8; }
+        .notice-box { background-color: #fef3c7; border-left: 4px solid #d97706; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #92400e; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+<div class="admin-box">
+    <h2>名片管理後臺介面 (GitHub 絕對路徑版)</h2>
+    
+    <div class="notice-box">
+        <strong>💡 GitHub 部署說明：</strong><br>
+        請於下方修改欄位，點擊下載後會得到唯一的 <strong>mycardAIVibeCoding.xml</strong>。<br>
+        請將此檔案上傳至您的 GitHub 倉庫對應路徑下覆蓋舊檔，即可完成線上名片同步更新！
+    </div>
+    
+    <div class="form-group">
+        <label>名片預設風格</label>
+        <select id="styleSelect">
+            <option value="cyber" selected>1. 麥考錫風格 (未來科技)</option>
+            <option value="art">2. 藝術風格 (古典人文)</option>
+            <option value="minimal">3. 簡約風格 (現代極簡)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>上傳大頭照 (限制: 500KB以下 / 寬413px內 / 高531px內)</label>
+        <input type="file" id="avatarInput" accept="image/*" onchange="validateImage(event, 'avatar')">
+        <span id="avatarError" class="error-msg"></span>
+    </div>
+
+    <div class="form-group">
+        <label>上傳名片連結 QR Code 圖檔 (限制: 500KB以下)</label>
+        <input type="file" id="qrInput" accept="image/*" onchange="validateImage(event, 'qrcode')">
+        <span id="qrError" class="error-msg"></span>
+    </div>
+
+    <div class="form-group">
+        <label>1. 姓名</label>
+        <input type="text" id="inputName" value="陳渙章">
+    </div>
+
+    <div class="form-group">
+        <label>2. 最高學歷</label>
+        <textarea id="inputEdu">臺北市立大學 公共事務學系碩士</textarea>
+    </div>
+
+    <div class="form-group">
+        <label>3. 經驗</label>
+        <textarea id="inputExp">成淵高中 國中部資訊老師</textarea>
+    </div>
+
+    <div class="form-group">
+        <label>5. 專長</label>
+        <textarea id="inputSkill">資訊課程教學、AI應用、程式設計、系統規劃</textarea>
+    </div>
+
+    <div class="form-group">
+        <label>6. 個人簡介</label>
+        <textarea id="inputBio">程式設計及系統規劃&lt;br&gt;AI應用規劃師&lt;br&gt;資訊課程教學</textarea>
+        <span class="hint">支援 &lt;br&gt; 換行指令</span>
+    </div>
+
+    <button onclick="exportXMLForGithub()">產生並下載 mycardAIVibeCoding.xml</button>
+</div>
+
+<script>
+    let avatarBase64 = "";
+    let qrcodeBase64 = "";
+
+    function validateImage(event, type) {
+        const file = event.target.files[0];
+        const errorEl = document.getElementById(type === 'avatar' ? 'avatarError' : 'qrError');
+        errorEl.style.display = "none";
+        if (!file) return;
+
+        if (file.size > 500 * 1024) {
+            errorEl.innerText = "【上傳失敗】檔案大小超出 500KB 限制！";
+            errorEl.style.display = "block";
+            event.target.value = "";
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                if (type === 'avatar' && (img.width > 413 || img.height > 531)) {
+                    errorEl.innerText = `【上傳失敗】尺寸 (${img.width}x${img.height} px) 超出限制！需在 413x531 內。`;
+                    errorEl.style.display = "block";
+                    event.target.value = "";
+                    return;
+                }
+                if (type === 'avatar') avatarBase64 = e.target.result;
+                else qrcodeBase64 = e.target.result;
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function exportXMLForGithub() {
+        const style = document.getElementById('styleSelect').value;
+        const name = document.getElementById('inputName').value;
+        const edu = document.getElementById('inputEdu').value;
+        const exp = document.getElementById('inputExp').value;
+        const skill = document.getElementById('inputSkill').value;
+        const bio = document.getElementById('inputBio').value;
+
+        // 建立包含 GitHub 絕對網址路徑標記與欄位內容的 XML
+        let xmlString = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+        xmlString += `\n`;
+        xmlString += `<card_data>\n`;
+        xmlString += `  <style>${style}</style>\n`;
+        xmlString += `  <name><![CDATA[${name}]]></name>\n`;
+        xmlString += `  <education><![CDATA[${edu}]]></education>\n`;
+        xmlString += `  <experience><![CDATA[${exp}]]></experience>\n`;
+        xmlString += `  <skills><![CDATA[${skill}]]></skills>\n`;
+        xmlString += `  <bio><![CDATA[${bio}]]></bio>\n`;
+        xmlString += `  <avatar>${avatarBase64}</avatar>\n`;
+        xmlString += `  <qrcode>${qrcodeBase64}</qrcode>\n`;
+        xmlString += `</card_data>`;
+
+        const blob = new Blob([xmlString], { type: "text/xml;charset=utf-8" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "mycardAIVibeCoding.xml"; // 固定儲存檔名
+        link.click();
+
+        alert("XML 檔案已成功下載！請將下載的檔案覆蓋至 GitHub 對應路徑下。");
+    }
+</script>
+</body>
+</html>
